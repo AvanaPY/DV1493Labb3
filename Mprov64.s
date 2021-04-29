@@ -10,7 +10,6 @@ curr:	.quad 	0
 
 	.text
 	.global	main
-	.extern putChar
 main:
 	pushq	$0
 	movq	$headMsg,%rdi
