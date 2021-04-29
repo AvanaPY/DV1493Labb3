@@ -6,8 +6,21 @@ outBuf:		.space 64
 outBufOffset:	.quad 0
 
 	.text
-	.global main
-main:
+	.global _main
+	.global inImage
+	.global getInt
+	.global getText
+	.global getChar
+	.global getInPos
+	.global setInPos
+	
+	.global outImage
+	.global putInt
+	.global putText	
+	.global putChar
+	.global getOutPos
+	.global setOutPos
+_main:
 	call inImage		# Get input from user
 
 	leaq inbuf, %rdi	# Print input 

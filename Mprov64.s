@@ -10,7 +10,7 @@ curr:	.quad 	0
 
 	.text
 	.global	main
-
+	.extern putChar
 main:
 	pushq	$0
 	movq	$headMsg,%rdi
@@ -59,26 +59,3 @@ l2:
 	call	outImage
 	popq	%rax
 	ret
-
-inImage:
-outImage:
-
-setOutPos:
-getOutPos:
-
-putInt:
-getInt:
-	ret
-	movq $buf, %rdi
-	movq $64, %rsi
-	movq stdin, %rdx
-	call fgets
-
-putChar:
-
-getText:
-putText:
-
-lPutTextDone:
-	ret
-	call puts
