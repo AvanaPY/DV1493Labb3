@@ -29,8 +29,10 @@ getText:
 getChar:
 	ret
 getInPos:
+	mov inbufOffset, %rax
 	ret
 setInPos:
+	mov %rdi, inbufOffset
 	ret
 
 
