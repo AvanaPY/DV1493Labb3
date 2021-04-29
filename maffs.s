@@ -7,6 +7,7 @@ outBufOffset:	.quad 0
 
 	.text
 	.global _main
+
 	.global inImage
 	.global getInt
 	.global getText
