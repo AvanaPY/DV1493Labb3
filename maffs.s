@@ -24,8 +24,8 @@ outbufOffset:	.quad 0
 main:
 	# call inImage		# Get input from user
 	call getChar
-	movb %al, outBuf
-	leaq outBuf, %rdi
+	movb %al, outbuf
+	leaq outbuf, %rdi
 	call puts		#
 
 	ret	
@@ -38,25 +38,25 @@ inImage:
 	call fgets		# call fgets
 	ret
 
-getInt:		# 
+getInt:
 	ret
 getText:
 	ret
-getChar: # takes inputbuf as rax and returns the first character of inputbuf/rax as rax
-	leaq inbuf, %rax # move the adress of inbuf to rax
+getChar:
+	leaq inbuf, %rax 	# move the adress of inbuf to rax
 	movq inbufOffset, %rbx	# Move inbufOffset to rbx
 
-	cmp $0, %rbx # if inbufOffset is 0
+	cmp $0, %rbx 		# if inbufOffset is 0
 	je _getCharNotDone
 
-	cmp $64, %rbx # if inbufoffset is above maxed
+	cmp $64, %rbx 		# if inbufoffset is above maxed
 	je _getCharNotDone
 _getCharContinue:
 	movb (%rax,%rbx,1), %al	# Copy the character at inbufOffset from rax to cl
-	add $1, inbufOffset
+	add $1, inbufOffset	# increment inbufOffset
 	ret
 _getCharNotDone:
-	call inImage
+	call inImage		# grab new input
 	movq inbufOffset, %rbx	# Move inbufOffset to rbx
 	jmp _getCharContinue
 
