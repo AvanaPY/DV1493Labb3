@@ -1,13 +1,12 @@
+# gcc -no-pie -fPIC maffs.s -o a && ./a
 	.data
 inbuf: 		.space 64
 inbufOffset:	.quad 0
 
-outBuf:		.space 64
-outBufOffset:	.quad 0
+outbuf:		.space 64
+outbufOffset:	.quad 0
 
 	.text
-	.global main
-
 	.global inImage
 	.global getInt
 	.global getText
@@ -21,6 +20,7 @@ outBufOffset:	.quad 0
 	.global putChar
 	.global getOutPos
 	.global setOutPos
+	.global main
 main:
 	# call inImage		# Get input from user
 	call getChar
@@ -69,12 +69,20 @@ setInPos:
 
 
 outImage:
+	leaq outbuf, %rdi
+	call puts
 	ret
 putInt:
 	ret
 putText:
 	ret
-putChar:
+putChar:  				# Puts %rdi into the output buffer
+					# Calls the outImage function if the buffer is full
+	movq outbufOffset, %rax 	# Move offset to rax
+	leaq outbuf, %rbx		# Load address to rbx
+	movb %dil, (%rbx, %rax, 1)	# Put input to address
+	add $1, %rax	
+	mov %rax, outbufOffset
 	ret
 getOutPos:
 	ret
