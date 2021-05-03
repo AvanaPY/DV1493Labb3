@@ -6,7 +6,7 @@ outBuf:		.space 64
 outBufOffset:	.quad 0
 
 	.text
-	.global _main
+	.global main
 
 	.global inImage
 	.global getInt
@@ -21,11 +21,13 @@ outBufOffset:	.quad 0
 	.global putChar
 	.global getOutPos
 	.global setOutPos
-_main:
-	call inImage		# Get input from user
-
-	leaq inbuf, %rdi	# Print input 
+main:
+	# call inImage		# Get input from user
+	call getChar
+	movb %al, outBuf
+	leaq outBuf, %rdi
 	call puts		#
+
 	ret	
 
 inImage:
@@ -40,8 +42,24 @@ getInt:		#
 	ret
 getText:
 	ret
-getChar:
+getChar: # takes inputbuf as rax and returns the first character of inputbuf/rax as rax
+	leaq inbuf, %rax # move the adress of inbuf to rax
+	movq inbufOffset, %rbx	# Move inbufOffset to rbx
+
+	cmp $0, %rbx # if inbufOffset is 0
+	je _getCharNotDone
+
+	cmp $64, %rbx # if inbufoffset is above maxed
+	je _getCharNotDone
+_getCharContinue:
+	movb (%rax,%rbx,1), %al	# Copy the character at inbufOffset from rax to cl
+	add $1, inbufOffset
 	ret
+_getCharNotDone:
+	call inImage
+	movq inbufOffset, %rbx	# Move inbufOffset to rbx
+	jmp _getCharContinue
+
 getInPos:
 	mov inbufOffset, %rax
 	ret
