@@ -6,14 +6,14 @@ inbufOffset:	.quad 0
 outbuf:		.space 64
 outbufOffset:	.quad 0
 
-maxBufferSize: .quad 4
+maxBufferSize: .quad 64
 
 putTextTestString: .asciz "Hello there :D"
 
 	.text
 	.global inImage
 	.global getInt
-	.global getText
+	.global get12345Text
 	.global getChar
 	.global getInPos
 	.global setInPos
@@ -26,16 +26,17 @@ putTextTestString: .asciz "Hello there :D"
 	.global setOutPos
 	.global main
 main:
-	# call inImage		# Get input from user
-	# call getChar
-	# movb %al, outbuf
-	# leaq outbuf, %rdi
-	# call puts		#
-
 	call inImage
 	call getInt
-
+	call getInt	
+	movq $0, %rbx	
 	ret
+
+#############
+#
+# Reads user input and puts it into the inbuf buffer
+#
+#############
 inImage:
 	movq $0, inbufOffset	# Reset inbufOffset to 0
 	leaq inbuf, %rdi	# Point to inbuf
@@ -44,6 +45,12 @@ inImage:
 	call fgets		# call fgets
 	ret
 
+##############
+#
+# Reads from the current inbuf buffer position
+# and converts the text into a number that it returns in %rax
+#
+##############
 getInt:
 	movq $0, %rax 			# resets the int register to 0
 	movb $0, %r8b 			# r(8b = 0) == positive, (r8b = 1) == negative
@@ -100,9 +107,20 @@ _getIntDone:
 	je _makeNegative 		# makes the sum negative before returning
 	ret 					# answer should sit in rax
 
+##############
+#
+# HURR DUUUUUR
+#
+##############
 getText:
 	ret
 
+##############
+#
+# Returns the current character in the current inbuffer position in %rax
+# This also calls inImage if the buffer is empty
+#
+#############
 getChar:
 	leaq inbuf, %rax 	# move the adress of inbuf to rax
 	movq inbufOffset, %rbx	# Move inbufOffset to rbx
@@ -120,24 +138,51 @@ _getCharNotDone:
 	movq inbufOffset, %rbx	# Move inbufOffset to rbx
 	jmp _getCharContinue
 
-
+##################
+#
+# Returns the current inbuffer position in %rax
+#
+#################
 getInPos:
 	mov inbufOffset, %rax		# 
 	ret
 
+###################
+#
+# Sets the current inbuffer position
+#
+##################
 setInPos:
 	mov %rdi, inbufOffset		#
 	ret
 
-
+###################
+#
+# Outputs the full outbuffer as text
+#
+##################
 outImage:
 	leaq outbuf, %rdi		# Load address of outbuf into rdi
 	call puts			# put text on screen
 	ret
 
+#################
+#
+# HURR DUUUUUR
+#
+#################
+
 putInt:
 	ret
 
+################
+#
+# Puts some text into the out buffer 
+#
+# Arguments:
+#	%rdi - Address to asciz string
+#
+################
 putText:
 	mov %rdi, %rcx			# Save address
 	mov $0, %rdi
@@ -145,13 +190,21 @@ _putTextLoop:
 	movb (%rcx), %dil		# Move character to rdi
 	cmp $0, %dil			# Check if character is null terminator
 	je _putTextDone			# Done if null terminator
-calll:
 	call putChar			# put char into buffer
 	inc %rcx				# move next char
 	jmp _putTextLoop		# loop
 _putTextDone:
 	ret
 
+
+################
+#
+# Puts a character into the out buffer
+#
+# Arguments:
+# 	%rdi - ascii character
+#
+################
 putChar:  				# Puts char in %rdi into the output buffer
 					# Calls the outImage function if the buffer is full
 	pushq %rcx
@@ -170,8 +223,25 @@ _putCharDone:
 	popq %rcx
 	ret
 
+####################
+#
+# Returns the current position in the out buffer
+#
+# Returns:
+#	%rax - Outbuffer position
+#
+####################
 getOutPos:
 	ret
+
+##################
+#
+# Sets the current position in the out buffer
+# 
+# Arguments:
+# 	%rdi - Integer
+#
+##################
 
 setOutPos:
 	ret
