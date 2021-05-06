@@ -13,7 +13,7 @@ putTextTestString: .asciz "Hello there :D"
 	.text
 	.global inImage
 	.global getInt
-	.global get12345Text
+	.global getText
 	.global getChar
 	.global getInPos
 	.global setInPos
@@ -26,10 +26,12 @@ putTextTestString: .asciz "Hello there :D"
 	.global setOutPos
 	.global main
 main:
-	call inImage
-	call getInt
-	call getInt	
-	movq $0, %rbx	
+#	call inImage
+#	call getInt
+#	call getInt	
+#	movq $0, %rbx
+	movq $78, %rdi	
+	call setInPos
 	ret
 
 #############
@@ -152,10 +154,25 @@ getInPos:
 
 ###################
 #
-# Sets the current inbuffer position
+# Sets the current inbuffer position.
+# Limits the position value to [0, maxBufferSize]
+#  
+# Arguments:
+# 	%rdi - int
 #
 ##################
 setInPos:
+	cmp $0, %rdi
+	jl _setInPosLZ
+	cmp maxBufferSize, %rdi
+	jg _setInPosGM
+	jmp _setInPosDone 	
+_setInPosLZ:
+	movq $0, %rdi
+	jmp _setInPosDone
+_setInPosGM:
+	movq maxBufferSize, %rdi
+_setInPosDone:	
 	mov %rdi, inbufOffset		#
 	ret
 
