@@ -9,6 +9,7 @@ outbufOffset:	.quad 0
 maxBufferSize: .quad 64
 
 putTextTestString: .asciz "Hello there :D"
+testGetTextSpace:	.space 13
 
 	.text
 	.global inImage
@@ -124,6 +125,19 @@ _getIntDone:
 #
 ##############
 getText:
+	movq %rdi, %rdx		# Move address to rdx as we'll use getChar to get the current char
+	movq %rsi, %rcx		# Amount of characters to be moved
+_getTextLoop:
+	call getChar
+	mov %rax, (%rdx)
+	inc %rdx
+	dec %rcx
+	cmp $0, %rcx
+	je _getTextDone
+	cmp $0, %al
+	je _getTextDone
+	jmp _getTextLoop
+_getTextDone:
 	ret
 
 ##############
@@ -135,7 +149,7 @@ getText:
 getChar:
 	leaq inbuf, %rax 	# move the adress of inbuf to rax
 	movq inbufOffset, %rbx	# Move inbufOffset to rbx
-	cmp $0, %rbx 		# if inbufOffset is 0
+	cmp $0, inbuf 		# if inbuf is empty e.g it starts with a null terminator
 	je _getCharNotDone
 
 	cmp maxBufferSize, %rbx	# if inbufoffset is above maxed
