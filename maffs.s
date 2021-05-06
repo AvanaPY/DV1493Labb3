@@ -50,6 +50,11 @@ inImage:
 # Reads from the current inbuf buffer position
 # and converts the text into a number that it returns in %rax
 #
+# Arguments:
+#
+# Returns:
+#	%rax - A single int
+#
 ##############
 getInt:
 	movq $0, %rax 			# resets the int register to 0
@@ -60,30 +65,30 @@ getInt:
 	movq inbufOffset, %rcx	# Move inbufOffset to rcx
 	cmp $64, %rcx 			# if inbufoffset is above maxed
 	jge inImage
-_spaceCheck:
+_getIntSpaceCheck:
 	movq inbufOffset, %rcx 	# loads inbufOffset into rcx
 	leaq inbuf, %rdx 		# loads inbuf into rdx
 	movb (%rdx, %rcx, 1), %bl # loads the next character from inbuf
 	cmp $32, %bl 			# checks if the character is a space
-	je _incOneAndLoop 		# loops and checks again
-	jmp _posOrMinCheck
-_incOneAndLoop: 			# loops and checks again
+	je _getIntincOneAndLoop 		# loops and checks again
+	jmp _getIntposOrMinCheck
+_getIntincOneAndLoop: 			# loops and checks again
 	inc %rcx
 	movq %rcx, inbufOffset
-	jmp _spaceCheck
-_posOrMinCheck: 			# checks if the first character are either a + or -
+	jmp _getIntSpaceCheck
+_getIntposOrMinCheck: 			# checks if the first character are either a + or -
 	cmp $45, %bl 			# is minus?
-	je _setMin
+	je _getIntsetMin
 	cmp $43, %bl 			# is plus?
-	je _setPos
-	jmp _loop
-_setMin:
+	je _getIntsetPos
+	jmp _getIntloop
+_getIntsetMin:
 	mov $1, %r8b
-_setPos:
+_getIntsetPos:
 	inc %rcx
 	movq %rcx, inbufOffset
-	jmp _loop
-_loop:
+	jmp _getIntloop
+_getIntloop:
 	movq inbufOffset, %rcx 	# loads inbufOffset into rcx
 	leaq inbuf, %rdx 		# loads inbuf into rdx
 	movb (%rdx, %rcx, 1), %bl # loads the next character from inbuf
@@ -92,19 +97,17 @@ _loop:
 	jl _getIntDone 			# jump if lower than 0 (and therefor not a number)
 	cmp $9, %bl
 	jg _getIntDone 			# jump if greater than 9(and therefor not a number)
-_continueLoop: 				# continues the loop by multiplying the sum by 10 and adding the new number
 	imul $10, %rax 
 	add %bl, %al
-_moveForwardLoop: 			# increases inbufOffset with one and loops again
 	inc %rcx
 	movq %rcx, inbufOffset
-	jmp _loop
-_makeNegative: 				# makes the sum negative before returning
+	jmp _getIntloop
+_getIntmakeNegative: 				# makes the sum negative before returning
 	neg %rax
 	ret
 _getIntDone:
 	cmp $1, %r8b 			# if r8b == 1 (aka the number had a - before it)
-	je _makeNegative 		# makes the sum negative before returning
+	je _getIntmakeNegative 		# makes the sum negative before returning
 	ret 					# answer should sit in rax
 
 ##############
