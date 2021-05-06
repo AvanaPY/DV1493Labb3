@@ -26,20 +26,21 @@ putTextTestString: .asciz "Hello there :D"
 	.global setOutPos
 	.global main
 main:
-#	call inImage
-#	call getInt
-#	call getInt	
+	call inImage
+	call getInt
+	call putInt
 #	movq $0, %rbx
-	movq $8, %rdi	
-	call setOutPos
+#	movq $8, %rdi	
+#	call setOutPos
 	
-	movq $-5, %rdi	
-	call setOutPos
+#	movq $-5, %rdi	
+#	call setOutPos
 	
-	movq $70, %rdi	
-	call setOutPos
+#	movq $70, %rdi	
+#	call setOutPos
 	
-	call getOutPos
+#	call getOutPos
+#	ret
 	ret
 
 #############
@@ -193,12 +194,36 @@ outImage:
 
 #################
 #
-# HURR DUUUUUR
+# Puts int from rax to outbuf in string format
+# Arguments:
+# 	%rax - int
 #
 #################
-
 putInt:
+	movb $0, %r8b 	# (r8b = 0) == positive, (r8b = 1) == negative
+	cmp $0, %rax
+	jl _putIntMinus
+_putIntLoop:
+	cmp $9, %rax # is rax 10 or more? Then we can divide it with 10, otherwise we jump away
+	jle _PutIntEnd
+
+	mov $0, %edx
+
+	movq $9, %rcx
+	inc %rcx
+	div %rcx # saves the rest in rdx and the divided in rax!
+	pushq %rdx
+	jmp _putIntLoop
+_PutIntEnd:
+	pushq %rax
+	# next time: "pop" from stack and add all with putChar one by one, ending with a minus if r8b is 1
 	ret
+
+_putIntMinus:
+	mov $1, %r8b
+	not %rax
+	inc %rax
+	jmp _putIntLoop
 
 ################
 #
