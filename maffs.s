@@ -25,13 +25,16 @@ testGetTextSpace:	.space 25
 	.global putChar
 	.global getOutPos
 	.global setOutPos
-	#.global main
-main:
-	ret
 
 #############
 #
 # Reads user input and puts it into the inbuf buffer
+#
+# Arguments: 
+#	-
+# 
+# Returns:
+#	-
 #
 #############
 inImage:
@@ -61,7 +64,7 @@ getInt:
 	jmp _getIntSpaceCheck
 _getIntEmptyBufferSkip:
 	movq inbufOffset, %rcx	# Move inbufOffset to rcx
-	cmp $64, %rcx 			# if inbufoffset is above maxed
+	cmp maxBufferSize, %rcx 			# if inbufoffset is above maxed
 	jl _getIntSpaceCheck
 	call inImage
 _getIntSpaceCheck:
@@ -152,6 +155,12 @@ _getTextDone:
 # Returns the current character in the current inbuffer position in %rax
 # This also calls inImage if the buffer is empty
 #
+# Arguments:
+#	-
+#
+# Returns:
+#	-
+#
 #############
 getChar:
 	push %rdx
@@ -176,6 +185,12 @@ _getCharNotDone:
 #
 # Returns the current inbuffer position in %rax
 #
+# Arguments:
+#	-
+#
+# Returns:
+#	%rax - Integer
+#
 #################
 getInPos:
 	mov inbufOffset, %rax		# 
@@ -188,6 +203,9 @@ getInPos:
 #  
 # Arguments:
 # 	%rdi - int
+#
+# Returns:
+#	-
 #
 ##################
 setInPos:
@@ -209,6 +227,12 @@ _setInPosDone:
 #
 # Outputs the full outbuffer as text
 #
+# Arguments:
+#	-
+#
+# Returns:
+#	-
+#
 ##################
 outImage:
 	movq $0, %rdi
@@ -221,8 +245,12 @@ outImage:
 #################
 #
 # Puts int from rax to outbuf in string format
+# 
 # Arguments:
 # 	%rax - int
+#
+# Returns:
+#	-
 #
 #################
 putInt:
@@ -276,6 +304,9 @@ _putIntMinus:
 # Arguments:
 #	%rdi - Address to asciz string
 #
+# Returns:
+# 	-
+#
 ################
 putText:
 	mov %rdi, %rcx			# Save address
@@ -297,6 +328,9 @@ _putTextDone:
 #
 # Arguments:
 # 	%rdi - ascii character
+#
+# Returns:
+# 	-
 #
 ################
 putChar:  				# Puts char in %rdi into the output buffer
@@ -321,6 +355,9 @@ _putCharDone:
 #
 # Returns the current position in the out buffer
 #
+# Arguments:
+#	-
+#
 # Returns:
 #	%rax - Integer - Outbuffer position
 #
@@ -335,6 +372,9 @@ getOutPos:
 # 
 # Arguments:
 # 	%rdi - Integer
+#
+# Returns:
+#	-
 #
 ##################
 
