@@ -3,7 +3,7 @@ inbuf: 		.space 64
 inbufOffset:	.quad 0
 outbuf:		.space 64
 outbufOffset:	.quad 0
-maxBufferSize: .quad 64
+maxBufferSize:  .quad 64
 
 	.text
 	# Functions for input
@@ -21,7 +21,6 @@ maxBufferSize: .quad 64
 	.global putChar
 	.global getOutPos
 	.global setOutPos
-
 #############
 #
 # Reads user input and puts it into the inbuf buffer
@@ -54,6 +53,7 @@ inImage:
 #
 ##############
 getInt:
+	xor %rbx, %rbx
 	movq inbuf, %rcx		# Move inbufOffset to rcx
 	cmp $0, %rcx 			# if inbuf is 0 or "empty"
 	jne _getIntEmptyBufferSkip
@@ -94,6 +94,8 @@ _getIntloop:
 	leaq inbuf, %rdx 		# loads inbuf into rdx
 	movb (%rdx, %rcx, 1), %bl # loads the next character from inbuf
 	sub $'0', %bl 			# makes the "char" 0 based
+	
+	
 	cmp $0, %bl
 	jl _getIntDone 			# jump if lower than 0 (and therefor not a number)
 	cmp $9, %bl
@@ -109,9 +111,11 @@ _getIntmakeNegative: 				# makes the sum negative before returning
 _getIntDone:
 	cmp $1, %r8b 			# if r8b == 1 (aka the number had a - before it)
 	je _getIntmakeNegative 		# makes the sum negative before returning
-	add $1, inbufOffset
-	ret 					# answer should sit in rax
-
+	cmp $240, %bl			# Compare with 240 since $' ' - $'0' = 240 (totally not trial and error)
+	jne _getIntReturn
+	add $1, inbufOffset	
+_getIntReturn:
+	ret
 ##############
 #
 # Moves text from inbuf to allocated buffer position
