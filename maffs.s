@@ -1,6 +1,6 @@
 # gcc -no-pie -fPIC maffs.s -o a && ./a
 	.data
-inbuf: 		.space 64
+inbuf: 		.space 64 
 inbufOffset:	.quad 0
 
 outbuf:		.space 64
@@ -9,7 +9,7 @@ outbufOffset:	.quad 0
 maxBufferSize: .quad 64
 
 putTextTestString: .asciz "Hello there :D"
-testGetTextSpace:	.space 13
+testGetTextSpace:	.space 25
 
 	.text
 	.global inImage
@@ -25,13 +25,17 @@ testGetTextSpace:	.space 13
 	.global putChar
 	.global getOutPos
 	.global setOutPos
-	.global main
-main:
-	call inImage
-	call getInt
-	call putInt
-	call outImage
+_main:
+#	call inImage
+break:
 
+	leaq testGetTextSpace, %rdi
+	movq $22, %rsi
+	call getText
+break2:	
+	leaq testGetTextSpace, %rdi
+	call puts
+	movq $0, %rax
 	ret
 
 #############
@@ -114,23 +118,37 @@ _getIntDone:
 
 ##############
 #
-# HURR DUUUUUR
+# Moves text from inbuf to allocated buffer position
+#
+# Arguments:
+#	%rdi - Address to buffer
+#	%rsi - Max numof characters to be moved
+#
+# Returns:
+#	%rax - Actual characters move
 #
 ##############
 getText:
-	movq %rdi, %rdx		# Move address to rdx as we'll use getChar to get the current char
+	movq %rdi, %rdx		# Move address to other register as we'll use getChar to get the current char
 	movq %rsi, %rcx		# Amount of characters to be moved
+	movq $0, %r14
+	movq inbufOffset, %rax
+	cmp %rax, maxBufferSize
+	jne _getTextLoop
+	call inImage 
 _getTextLoop:
 	call getChar
 	mov %rax, (%rdx)
 	inc %rdx
+	inc %r14
 	dec %rcx
-	cmp $0, %rcx
+	cmp $0, %rcx		# If we have moved max characters
 	je _getTextDone
-	cmp $0, %al
+	cmp $0, %al		# If %al is a null terminator
 	je _getTextDone
 	jmp _getTextLoop
 _getTextDone:
+	movq %r14, %rax
 	ret
 
 ##############
@@ -140,6 +158,7 @@ _getTextDone:
 #
 #############
 getChar:
+	push %rdx
 	leaq inbuf, %rax 	# move the adress of inbuf to rax
 	movq inbufOffset, %rbx	# Move inbufOffset to rbx
 	cmp $0, inbuf 		# if inbuf is empty e.g it starts with a null terminator
@@ -150,6 +169,7 @@ getChar:
 _getCharContinue:
 	movb (%rax,%rbx,1), %al	# Copy the character at inbufOffset from rax to cl
 	add $1, inbufOffset	# increment inbufOffset
+	pop %rdx
 	ret
 _getCharNotDone:
 	call inImage		# grab new input
@@ -302,10 +322,11 @@ _putCharDone:
 # Returns the current position in the out buffer
 #
 # Returns:
-#	%rax - Outbuffer position
+#	%rax - Integer - Outbuffer position
 #
 ####################
 getOutPos:
+	movq outbufOffset, %rax
 	ret
 
 ##################
@@ -318,5 +339,17 @@ getOutPos:
 ##################
 
 setOutPos:
+	cmp $0, %rdi			# Compare 0
+	jl _setOutPosLZ			# 
+	cmp maxBufferSize, %rdi		# Compare max
+	jg _setOutPosGM			#
+	jmp _setOutPosDone 		#
+_setOutPosLZ:
+	movq $0, %rdi			# If is less
+	jmp _setOutPosDone		#
+_setOutPosGM:
+	movq maxBufferSize, %rdi	# If is greater
+_setOutPosDone:	
+	mov %rdi, inbufOffset		#
 	ret
-
+	ret
