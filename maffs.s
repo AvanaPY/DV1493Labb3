@@ -112,8 +112,8 @@ _getIntDone:
 	cmp $1, %r8b 			# if r8b == 1 (aka the number had a - before it)
 	je _getIntmakeNegative 		# makes the sum negative before returning
 	cmp $240, %bl			# Compare with 240 since $' ' - $'0' = 240 (totally not trial and error)
-	jne _getIntReturn
-	add $1, inbufOffset	
+	jne _getIntReturn		# this check against 240 is necessary to make sure that our output matches
+	add $1, inbufOffset		# The given example. But it's not how the function is suppose to work (???)
 _getIntReturn:
 	ret
 ##############
