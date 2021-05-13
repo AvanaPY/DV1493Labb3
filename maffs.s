@@ -239,8 +239,7 @@ _putIntLoop:
 
 	mov $0, %edx
 
-	movq $9, %rcx
-	inc %rcx
+	movq $10, %rcx
 	div %rcx # saves the rest in rdx and the divided in rax!
 	pushq %rdx
 	jmp _putIntLoop
@@ -266,8 +265,8 @@ _putIntAddMinus:
 
 _putIntMinus:
 	mov $1, %r8b
-	not %rax
-	inc %rax
+	not %rdi
+	inc %rdi
 	jmp _putIntLoop
 
 ################
