@@ -30,9 +30,8 @@ main:
 	call inImage
 	call getInt
 	call putInt
-#	movq $0, %rbx
-	movq $78, %rdi	
-	call setInPos
+	call outImage
+
 	ret
 
 #############
@@ -209,11 +208,13 @@ outImage:
 #################
 putInt:
 	movb $0, %r8b 	# (r8b = 0) == positive, (r8b = 1) == negative
+	movq $10, %rbp
+	pushq %rbp
 	cmp $0, %rax
 	jl _putIntMinus
 _putIntLoop:
 	cmp $9, %rax # is rax 10 or more? Then we can divide it with 10, otherwise we jump away
-	jle _PutIntEnd
+	jle _putIntEnd
 
 	mov $0, %edx
 
@@ -222,10 +223,25 @@ _putIntLoop:
 	div %rcx # saves the rest in rdx and the divided in rax!
 	pushq %rdx
 	jmp _putIntLoop
-_PutIntEnd:
+_putIntEnd:
 	pushq %rax
-	# next time: "pop" from stack and add all with putChar one by one, ending with a minus if r8b is 1
+	cmp $1, %r8b
+	je _putIntAddMinus
+_putIntUnStacking:
+	popq %rdi
+	cmp $10, %rdi
+	je _putIntReturnNQuit
+
+	addq $48, %rdi
+	call putChar
+	jmp _putIntUnStacking
+_putIntReturnNQuit:
 	ret
+
+_putIntAddMinus:
+	movq $45, %rdi
+	call putChar
+	jmp _putIntUnStacking
 
 _putIntMinus:
 	mov $1, %r8b
