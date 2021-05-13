@@ -1,17 +1,12 @@
-# gcc -no-pie -fPIC maffs.s -o a && ./a
 	.data
 inbuf: 		.space 64 
 inbufOffset:	.quad 0
-
 outbuf:		.space 64
 outbufOffset:	.quad 0
-
 maxBufferSize: .quad 64
 
-putTextTestString: .asciz "Hello there :D"
-testGetTextSpace:	.space 25
-
 	.text
+	# Functions for input
 	.global inImage
 	.global getInt
 	.global getText
@@ -19,6 +14,7 @@ testGetTextSpace:	.space 25
 	.global getInPos
 	.global setInPos
 	
+	# Functions for output
 	.global outImage
 	.global putInt
 	.global putText	
@@ -51,6 +47,7 @@ inImage:
 # and converts the text into a number that it returns in %rax
 #
 # Arguments:
+#	-
 #
 # Returns:
 #	%rax - A single int
@@ -124,7 +121,7 @@ _getIntDone:
 #	%rsi - Max numof characters to be moved
 #
 # Returns:
-#	%rax - Actual characters move
+#	%rax - Actual characters moved
 #
 ##############
 getText:
@@ -159,7 +156,7 @@ _getTextDone:
 #	-
 #
 # Returns:
-#	-
+#	%rax - Ascii character that was read
 #
 #############
 getChar:
