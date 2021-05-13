@@ -25,13 +25,8 @@ testGetTextSpace:	.space 25
 	.global putChar
 	.global getOutPos
 	.global setOutPos
-	.global main
+	#.global main
 main:
-#	call inImage
-	call getInt
-	movq %rax, %rdi
-	call putInt
-	call outImage
 	ret
 
 #############
@@ -114,6 +109,7 @@ _getIntmakeNegative: 				# makes the sum negative before returning
 _getIntDone:
 	cmp $1, %r8b 			# if r8b == 1 (aka the number had a - before it)
 	je _getIntmakeNegative 		# makes the sum negative before returning
+	add $1, inbufOffset
 	ret 					# answer should sit in rax
 
 ##############
@@ -215,6 +211,8 @@ _setInPosDone:
 #
 ##################
 outImage:
+	movq $0, %rdi
+	call putChar
 	movq $0, outbufOffset
 	leaq outbuf, %rdi		# Load address of outbuf into rdi
 	call puts			# put text on screen
@@ -240,7 +238,9 @@ _putIntLoop:
 	mov $0, %edx
 
 	movq $10, %rcx
+	movq %rdi, %rax
 	div %rcx # saves the rest in rdx and the divided in rax!
+	movq %rax, %rdi
 	pushq %rdx
 	jmp _putIntLoop
 _putIntEnd:
@@ -350,6 +350,5 @@ _setOutPosLZ:
 _setOutPosGM:
 	movq maxBufferSize, %rdi	# If is greater
 _setOutPosDone:	
-	mov %rdi, inbufOffset		#
-	ret
+	mov %rdi, outbufOffset		#
 	ret
