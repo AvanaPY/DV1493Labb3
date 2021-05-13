@@ -25,17 +25,13 @@ testGetTextSpace:	.space 25
 	.global putChar
 	.global getOutPos
 	.global setOutPos
-_main:
+	.global main
+main:
 #	call inImage
-break:
-
-	leaq testGetTextSpace, %rdi
-	movq $22, %rsi
-	call getText
-break2:	
-	leaq testGetTextSpace, %rdi
-	call puts
-	movq $0, %rax
+	call getInt
+	movq %rax, %rdi
+	call putInt
+	call outImage
 	ret
 
 #############
@@ -63,15 +59,19 @@ inImage:
 #
 ##############
 getInt:
-	movq $0, %rax 			# resets the int register to 0
-	movb $0, %r8b 			# r(8b = 0) == positive, (r8b = 1) == negative
 	movq inbuf, %rcx		# Move inbufOffset to rcx
 	cmp $0, %rcx 			# if inbuf is 0 or "empty"
-	je inImage
+	jne _getIntEmptyBufferSkip
+	call inImage
+	jmp _getIntSpaceCheck
+_getIntEmptyBufferSkip:
 	movq inbufOffset, %rcx	# Move inbufOffset to rcx
 	cmp $64, %rcx 			# if inbufoffset is above maxed
-	jge inImage
+	jl _getIntSpaceCheck
+	call inImage
 _getIntSpaceCheck:
+	movq $0, %rax 			# resets the int register to 0
+	movb $0, %r8b 			# r(8b = 0) == positive, (r8b = 1) == negative
 	movq inbufOffset, %rcx 	# loads inbufOffset into rcx
 	leaq inbuf, %rdx 		# loads inbuf into rdx
 	movb (%rdx, %rcx, 1), %bl # loads the next character from inbuf
@@ -215,6 +215,7 @@ _setInPosDone:
 #
 ##################
 outImage:
+	movq $0, outbufOffset
 	leaq outbuf, %rdi		# Load address of outbuf into rdi
 	call puts			# put text on screen
 	ret
@@ -230,10 +231,10 @@ putInt:
 	movb $0, %r8b 	# (r8b = 0) == positive, (r8b = 1) == negative
 	movq $10, %rbp
 	pushq %rbp
-	cmp $0, %rax
+	cmp $0, %rdi
 	jl _putIntMinus
 _putIntLoop:
-	cmp $9, %rax # is rax 10 or more? Then we can divide it with 10, otherwise we jump away
+	cmp $9, %rdi # is rax 10 or more? Then we can divide it with 10, otherwise we jump away
 	jle _putIntEnd
 
 	mov $0, %edx
@@ -244,7 +245,7 @@ _putIntLoop:
 	pushq %rdx
 	jmp _putIntLoop
 _putIntEnd:
-	pushq %rax
+	pushq %rdi
 	cmp $1, %r8b
 	je _putIntAddMinus
 _putIntUnStacking:
@@ -252,7 +253,7 @@ _putIntUnStacking:
 	cmp $10, %rdi
 	je _putIntReturnNQuit
 
-	addq $48, %rdi
+	addq $'0', %rdi
 	call putChar
 	jmp _putIntUnStacking
 _putIntReturnNQuit:
